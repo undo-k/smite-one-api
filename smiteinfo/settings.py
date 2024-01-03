@@ -47,7 +47,10 @@ INSTALLED_APPS = [
     "smiteinfo",
 ]
 
-CORS_ALLOWED_ORIGINS = ["https://web-production-3593.up.railway.app"]
+CORS_ALLOWED_ORIGINS = [
+    "https://web-production-3593.up.railway.app",
+    "https://smite-one-production.up.railway.app",
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
