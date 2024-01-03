@@ -30,8 +30,8 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
 
-ALLOWED_HOSTS = ["web-production-3593.up.railway.app", "127.0.0.1"]
-CSRF_TRUSTED_ORIGINS = ["web-production-3593.up.railway.app"]
+ALLOWED_HOSTS = ["https://web-production-3593.up.railway.app/", ""]
+CSRF_TRUSTED_ORIGINS = ["https://web-production-3593.up.railway.app/"]
 
 # Application definition
 
@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "smiteinfo",
 ]
 
-CORS_ALLOWED_ORIGINS = ["web-production-3593.up.railway.app"]
+CORS_ALLOWED_ORIGINS = ["https://web-production-3593.up.railway.app/"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
