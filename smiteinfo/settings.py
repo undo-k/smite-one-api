@@ -15,6 +15,8 @@ from pathlib import Path
 
 import dj_database_url
 
+from smiteinfo import constants
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,9 +31,16 @@ SECRET_KEY = os.environ.get(
 )
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
-
-ALLOWED_HOSTS = ["web-production-3593.up.railway.app"]
-CSRF_TRUSTED_ORIGINS = ["https://web-production-3593.up.railway.app"]
+if DEBUG:
+    BASE_URL = constants.BASE_HTTP_URL_DEV
+    ALLOWED_HOSTS = [constants.BASE_URL_DEV]
+    CSRF_TRUSTED_ORIGINS = [constants.FRONT_END_URL_DEV]
+    CORS_ALLOWED_ORIGINS = [constants.FRONT_END_URL_DEV]
+else:
+    BASE_URL = constants.BASE_HTTP_URL_PROD
+    ALLOWED_HOSTS = [constants.BASE_URL_PROD]
+    CSRF_TRUSTED_ORIGINS = [constants.FRONT_END_URL_PROD]
+    CORS_ALLOWED_ORIGINS = [constants.FRONT_END_URL_PROD]
 
 # Application definition
 
@@ -45,11 +54,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "smiteinfo",
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "https://web-production-3593.up.railway.app",
-    "https://smite-one-production.up.railway.app",
 ]
 
 MIDDLEWARE = [
@@ -86,12 +90,17 @@ WSGI_APPLICATION = "smiteinfo.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
+if DEBUG:
+    from smiteinfo import local
+
+    DATABASES = local.DATABASES
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "postgres",
+        }
     }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -128,7 +137,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "static"
+STATICFILES_DIRS = [BASE_DIR / "media"]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
