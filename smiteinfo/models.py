@@ -10,6 +10,8 @@ class Item(models.Model):
 
     name = models.CharField(max_length=64, unique=True, null=False)
     image = models.ImageField(upload_to="images/", null=True)
+    damage_types = [("Magical", "Magical"), ("Physical", "Physical"), ("Both", "Both")]
+    damage_type = models.CharField(max_length=64, choices=damage_types, blank=True)
 
     def __str__(self):
         return self.name
@@ -124,7 +126,12 @@ class God(models.Model):
         match_players = list(
             self.matchplayer_set.all().values("id", "match_id", "won", "items")
         )
-        all_item_pks = list(Item.objects.values_list("id", flat=True).distinct())
+        damage_types = ["Both", self.damage_type]
+        all_item_pks = list(
+            Item.objects.filter(damage_type__in=damage_types)
+            .values_list("id", flat=True)
+            .distinct()
+        )
         filtered_mps = {}
         for match_player in match_players:
             mpid = match_player["id"]
