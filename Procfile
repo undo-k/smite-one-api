@@ -1,1 +1,1 @@
-web: python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --no-input && python manage.py update_models && gunicorn smiteinfo.wsgi
+web: python manage.py migrate && python manage.py collectstatic --no-input && python manage.py update_models && gunicorn smiteinfo.wsgi
