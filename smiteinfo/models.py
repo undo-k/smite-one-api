@@ -1,11 +1,8 @@
-from django.db import models
-from django.urls import reverse
-from django.db.models import Count, ExpressionWrapper, fields, Avg
 import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
+from django.db import models
+from django.db.models import Count, ExpressionWrapper, fields, Avg
+from django.urls import reverse
 from sklearn.linear_model import LogisticRegression
-from sklearn import metrics
 
 
 class Item(models.Model):
@@ -51,56 +48,10 @@ class God(models.Model):
     prev_ban_rate = models.DecimalField(
         max_digits=5, decimal_places=2, blank=True, null=True
     )
-    top_items = models.ManyToManyField(Item, blank=True)
-
-    @property
-    def frame(self):
-        return {}
-        match_players = self.matchplayer_set.all().values(
-            "id", "match_id", "won", "items"
-        )
-        match_players = list(match_players)
-        filtered_mps = {}
-
-        for match_player in match_players:
-            mpid = match_player["id"]
-            if mpid in filtered_mps:
-                filtered_mps[mpid]["items"].append(match_player["items"])
-            else:
-                filtered_mps[mpid] = {
-                    "id": mpid,
-                    "match_id": match_player["match_id"],
-                    "won": match_player["won"],
-                    "items": [match_player["items"]],
-                }
-
-        filtered_mps = list(filtered_mps.values())
-
-        for mp in filtered_mps:
-            while len(mp["items"]) < 6:
-                mp["items"].append(-1)
-
-        # list comp for ONLY match_players with finished builds
-        # use as an alternative to padding out unfinished builds
-        # filtered_mps = [mp for mp in filtered_mps if len(mp["items"]) == 6]
-
-        df = pd.DataFrame(filtered_mps)
-        print(df)
-
-        df["items"] = np.array(df["items"])
-        x = df["items"]
-        y = df["won"]
-        x_train, x_test, y_train, y_test = train_test_split(
-            x, y, test_size=0.3, random_state=0
-        )
-
-        log_regression = LogisticRegression()
-
-        log_regression.fit(x_train, y_train)
-        # y_pred = log_regression.predict(x_test)
-
-        # print(metrics.accuracy_score(y_test, y_pred))
-        return df
+    top_items = models.ManyToManyField(Item, blank=True, related_name="top_items_set")
+    lr_top_items = models.ManyToManyField(
+        Item, blank=True, related_name="lr_top_items_set"
+    )
 
     def save(self, *args, **kwargs):
         role_to_damage_type = {
@@ -116,6 +67,7 @@ class God(models.Model):
         self.pick_rate = self.calculate_pick_rate()
         self.ban_rate = self.calculate_ban_rate()
         self.top_items.set(self.calculate_top_items())
+        self.lr_top_items.set(self.calculate_lr_top_items())
 
         super().save(*args, **kwargs)
 
@@ -163,6 +115,76 @@ class God(models.Model):
             )
         )
         return items.order_by("-win_rate")[:item_count]
+
+    def calculate_lr_top_items(self):
+        # print("in god: " + self.name)
+        num_match_players = len(self.matchplayer_set.all().values("won").distinct())
+        if num_match_players < 2:
+            return Item.objects.none()
+        match_players = list(
+            self.matchplayer_set.all().values("id", "match_id", "won", "items")
+        )
+        all_item_pks = list(Item.objects.values_list("id", flat=True).distinct())
+        filtered_mps = {}
+        for match_player in match_players:
+            mpid = match_player["id"]
+            if mpid in filtered_mps:
+                filtered_mps[mpid]["items"].append(match_player["items"])
+            else:
+                filtered_mps[mpid] = {
+                    "id": mpid,
+                    "match_id": match_player["match_id"],
+                    "won": match_player["won"],
+                    "items": [match_player["items"]],
+                }
+        filtered_mps = list(filtered_mps.values())
+        # print(filtered_mps)
+
+        normalized_data = {"match_id": [], "won": []}
+        for item_pk in all_item_pks:
+            if item_pk not in normalized_data:
+                normalized_data[item_pk] = []
+
+        for mp in filtered_mps:
+            match_id = mp["match_id"]
+
+            normalized_data["match_id"].append(match_id)
+            normalized_data["won"].append(mp["won"])
+            for item_pk in all_item_pks:
+                if item_pk not in mp["items"]:
+                    normalized_data[item_pk].append(0)
+                else:
+                    normalized_data[item_pk].append(1)
+
+        # print(normalized_data)
+        df = pd.DataFrame(normalized_data)
+
+        # print(df)
+
+        x = df.drop(["match_id", "won"], axis=1)
+        y = df["won"]
+
+        log_regression = LogisticRegression()
+
+        log_regression.fit(x, y)
+        coefficients = log_regression.coef_[0]
+        x_item_pks = x.columns
+        coefficients_df = pd.DataFrame(
+            {"Item": x_item_pks, "Coefficient": coefficients}
+        )
+        coefficients_df = coefficients_df.sort_values(by="Coefficient", ascending=False)
+        # print(coefficients_df)
+        top_items = coefficients_df.head(6)["Item"].tolist()
+        item_dict = Item.objects.in_bulk(top_items)
+        queryset = Item.objects.filter(name__in=item_dict.values())
+
+        # print(queryset)
+
+        # list comp for ONLY match_players with finished builds
+        # use as an alternative to padding out unfinished builds
+        # filtered_mps = [mp for mp in filtered_mps if len(mp["items"]) == 6]
+
+        return queryset
 
     def avg_kills(self):
         return MatchPlayerDetail.objects.filter(match_player__god=self).aggregate(

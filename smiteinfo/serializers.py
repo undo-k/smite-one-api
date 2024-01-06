@@ -31,5 +31,24 @@ class GodSerializer(serializers.ModelSerializer):
             "pick_rate",
             "ban_rate",
             "top_items",
-            "frame",
+        ]
+
+
+class GodDetailSerializer(serializers.ModelSerializer):
+    top_items = ItemSerializer(many=True)
+    lr_top_items = ItemSerializer(many=True)
+    win_rate = serializers.DecimalField(
+        coerce_to_string=False, max_digits=5, decimal_places=2
+    )
+
+    class Meta:
+        model = God
+        fields = [
+            "name",
+            "role",
+            "win_rate",
+            "pick_rate",
+            "ban_rate",
+            "top_items",
+            "lr_top_items",
         ]

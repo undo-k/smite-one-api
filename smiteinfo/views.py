@@ -1,12 +1,14 @@
-from .models import God, Item, Match, MatchPlayer
 from rest_framework import generics
-from .serializers import GodSerializer
+
+from .models import God
+from .serializers import GodSerializer, GodDetailSerializer
+
 
 class GodDetail(generics.RetrieveAPIView):
     """API endpoint to view the details of a specific God."""
 
     queryset = God.objects.all()
-    serializer_class = GodSerializer
+    serializer_class = GodDetailSerializer
 
 
 class GodList(generics.ListAPIView):
