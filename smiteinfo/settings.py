@@ -39,7 +39,7 @@ if DEBUG:
 else:
     BASE_URL = constants.BASE_HTTP_URL_PROD
     ALLOWED_HOSTS = [constants.BASE_URL_PROD]
-    CSRF_TRUSTED_ORIGINS = [constants.FRONT_END_URL_PROD]
+    CSRF_TRUSTED_ORIGINS = [constants.BASE_HTTP_URL_PROD, constants.FRONT_END_URL_PROD]
     CORS_ALLOWED_ORIGINS = [constants.FRONT_END_URL_PROD]
 
 # Application definition
