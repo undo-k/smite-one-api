@@ -13,7 +13,7 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = ["name", "image"]
 
     def get_image(self, obj):
-        return f"{settings.BASE_URL}{static(obj.image.name)}"
+        return f"{settings.BASE_HTTP_URL}{static(obj.image.name)}"
 
 
 class GodSerializer(serializers.ModelSerializer):

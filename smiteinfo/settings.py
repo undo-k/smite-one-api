@@ -33,7 +33,7 @@ BASE_URL = os.environ.get("DJANGO_BASE_URL", "127.0.0.1")
 FRONT_END_URL = os.environ.get("VUE_BASE_URL", "http://localhost:5173")
 
 if DEBUG:
-    BASE_HTTP_URL = "http://" + BASE_URL  # dev server doesn't support https
+    BASE_HTTP_URL = "http://" + BASE_URL + ":8000"  # dev server doesn't support https
 else:
     BASE_HTTP_URL = "https://" + BASE_URL
 
