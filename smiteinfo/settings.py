@@ -15,8 +15,6 @@ from pathlib import Path
 
 import dj_database_url
 
-from smiteinfo import constants
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,16 +29,17 @@ SECRET_KEY = os.environ.get(
 )
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
+BASE_URL = os.environ.get("DJANGO_BASE_URL", "127.0.0.1")
+FRONT_END_URL = os.environ.get("VUE_BASE_URL", "http://localhost:5173")
+
 if DEBUG:
-    BASE_URL = constants.BASE_HTTP_URL_DEV
-    ALLOWED_HOSTS = [constants.BASE_URL_DEV]
-    CSRF_TRUSTED_ORIGINS = [constants.FRONT_END_URL_DEV]
-    CORS_ALLOWED_ORIGINS = [constants.FRONT_END_URL_DEV]
+    BASE_HTTP_URL = "http://" + BASE_URL  # dev server doesn't support https
 else:
-    BASE_URL = constants.BASE_HTTP_URL_PROD
-    ALLOWED_HOSTS = [constants.BASE_URL_PROD]
-    CSRF_TRUSTED_ORIGINS = [constants.BASE_HTTP_URL_PROD, constants.FRONT_END_URL_PROD]
-    CORS_ALLOWED_ORIGINS = [constants.FRONT_END_URL_PROD]
+    BASE_HTTP_URL = "https://" + BASE_URL
+
+ALLOWED_HOSTS = [BASE_URL]
+CSRF_TRUSTED_ORIGINS = [BASE_HTTP_URL, FRONT_END_URL]
+CORS_ALLOWED_ORIGINS = [FRONT_END_URL]
 
 # Application definition
 
