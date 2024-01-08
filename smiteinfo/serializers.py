@@ -28,8 +28,6 @@ class GodSerializer(serializers.ModelSerializer):
             "name",
             "role",
             "win_rate",
-            "pick_rate",
-            "ban_rate",
             "top_items",
         ]
 
@@ -38,6 +36,12 @@ class GodDetailSerializer(serializers.ModelSerializer):
     top_items = ItemSerializer(many=True)
     lr_top_items = ItemSerializer(many=True)
     win_rate = serializers.DecimalField(
+        coerce_to_string=False, max_digits=5, decimal_places=2
+    )
+    pick_rate = serializers.DecimalField(
+        coerce_to_string=False, max_digits=5, decimal_places=2
+    )
+    ban_rate = serializers.DecimalField(
         coerce_to_string=False, max_digits=5, decimal_places=2
     )
 
