@@ -1,1 +1,3 @@
-# smite-one-api
+# smite-one-api deprecated
+
+The *second* iteration of the api for smite-one. It was succeeded by https://github.com/undo-k/smite-one-api-v2/. This project started out solely in vanilla Django, because I wanted to eventually do some machine learning on the data I'd get from Smite's dev api, I figured a python backend would be the best place to start. I grew tired of Django's templates relatively fast, and reused what I had for Django rest, and writing a new frontend from scratch using Vue. I couldn't get my local environment to work the same way as when I had this repo running in a railway instance, and I didn't want to pay for it anymore so that fueled another rewrite. I haven't looked at the code in this repo in several months which must mean it's god awful ugly. But I wrote it so I stand by it. Unless there are variable named with foul language. Then that wasn't me. 
